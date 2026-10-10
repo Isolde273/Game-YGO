@@ -1,9 +1,0 @@
-{
-  "key": "official",
-  "requestedUrl": "https://www.yugioh-card.com/japan/products/locr/",
-  "finalUrl": "https://www.yugioh-card.com/japan/products/locr/",
-  "status": 200,
-  "bytes": 48331,
-  "sha256": "abea7c7dd427e3376c6a1bf33d69b29d4ff34ace83fa862ec28dfcb6dd5c30ab",
-  "fetchedAtUTC": "2026-10-08T11:09:04.906345+00:00"
-}

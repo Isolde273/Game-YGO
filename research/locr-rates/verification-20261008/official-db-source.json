@@ -1,8 +1,0 @@
-{
-  "requestedUrl": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&pid=1000009564000&rp=99999&request_locale=ja",
-  "finalUrl": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&pid=1000009564000&rp=99999&request_locale=ja",
-  "status": 200,
-  "bytes": 484641,
-  "sha256": "d0a8f17e4d0b09cdffe063c6ce7f559043637cd16f8d0779bf64bcf73d546ec4",
-  "fetchedAtUTC": "2026-10-08T11:09:31.305454+00:00"
-}
