@@ -1,0 +1,402 @@
+[
+  {
+    "cardId": "LOCR-JP001",
+    "nameJa": "白き幻獣－青眼の白龍",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP002",
+    "nameJa": "蒼の深淵 ディープアイズ・ホワイト・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP003",
+    "nameJa": "ドラゴン・導きの呼笛",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP004",
+    "nameJa": "終撃竜－サイバー・エンド・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP005",
+    "nameJa": "機光竜－サイバー・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP006",
+    "nameJa": "未来融合－フューチャー・フュージョン・ノヴァ",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP007",
+    "nameJa": "赤き竜 ケッツァーコアトル",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP008",
+    "nameJa": "スカーレッド・ノヴァ・ドラゴン－バーニング・ソウル",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP009",
+    "nameJa": "レッド・デーモンズ・チェーン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP010",
+    "nameJa": "超銀河眼の光子龍－フォトン・ハウリング",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP011",
+    "nameJa": "銀河眼の輝光子竜",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP012",
+    "nameJa": "ＧＤロボ・オービタル ７",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP013",
+    "nameJa": "四天の龍 スターヴ・ヴェノム・フュージョン・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP014",
+    "nameJa": "四天の龍 クリアウィング・シンクロ・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP015",
+    "nameJa": "四天の龍 ダーク・リベリオン・エクシーズ・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP016",
+    "nameJa": "ヴァレルロード・Ｌ・ドラゴン",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP017",
+    "nameJa": "ヴァレット・バラージュ",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP018",
+    "nameJa": "トリプル・ヴァレル・リボルブ",
+    "rarities": "Ultra,Ultra(Overframe),Prismatic Secret(Overframe),Grandmaster"
+  },
+  {
+    "cardId": "LOCR-JP019",
+    "nameJa": "デミウルゴスＥＭＡ",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP020",
+    "nameJa": "闇の神－ダークゴッド",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP021",
+    "nameJa": "神鳴り",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP022",
+    "nameJa": "ＤＴカタストローグ",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP023",
+    "nameJa": "ＤＴナイトメア・ハンド",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP024",
+    "nameJa": "ガトリング・オーガ",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP025",
+    "nameJa": "インフェルニティ・デス・ガンマン",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP026",
+    "nameJa": "カオスエンド・ルーラー－開闢と終焉の支配者－",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP027",
+    "nameJa": "ＨＲＵＭ－アルティメット・フォース",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP028",
+    "nameJa": "パーフェクトロン・ハイドライブ・ドラゴン",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP029",
+    "nameJa": "雷撃壊獣サンダー・ザ・キング",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP030",
+    "nameJa": "Ｒ－ＡＣＥタービュランス",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP031",
+    "nameJa": "白銀の城のラビュリンス",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP032",
+    "nameJa": "原罪のディアベルゼ",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP033",
+    "nameJa": "アルバスの落胤",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP034",
+    "nameJa": "白の聖女エクレシア",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP035",
+    "nameJa": "厄災の星ティ・フォン",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP036",
+    "nameJa": "宵星の機神ディンギルス",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP037",
+    "nameJa": "月女神の鏃",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP038",
+    "nameJa": "Ｍ∀ＬＩＣＥ ＩＮ ＵＮＤＥＲＧＲＯＵＮＤ",
+    "rarities": "Ultra"
+  },
+  {
+    "cardId": "LOCR-JP039",
+    "nameJa": "ＰＳＹフレーム・ドライバー",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP040",
+    "nameJa": "轟雷帝ザボルグ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP041",
+    "nameJa": "混沌なる魅惑の女王",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP042",
+    "nameJa": "ネメシス・コリドー",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP043",
+    "nameJa": "インフェルニティ・デーモン",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP044",
+    "nameJa": "エクリプス・ワイバーン",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP045",
+    "nameJa": "白銀の城の召使い アリアンナ",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP046",
+    "nameJa": "原石竜アナザー・ベリル",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP047",
+    "nameJa": "剣神官ムドラ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP048",
+    "nameJa": "応戦するＧ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP049",
+    "nameJa": "サイキック・ブロッカー",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP050",
+    "nameJa": "宿神像ケルドウ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP051",
+    "nameJa": "異怪の妖精 エルフォビア",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP052",
+    "nameJa": "インフェルニティ・ネクロマンサー",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP053",
+    "nameJa": "ＰＳＹフレームギア・δ",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP054",
+    "nameJa": "ネメシス・フラッグ",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP055",
+    "nameJa": "ＰＳＹフレームギア・γ",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP056",
+    "nameJa": "白き森のリゼット",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP057",
+    "nameJa": "輪廻竜サンサーラ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP058",
+    "nameJa": "サイバー・エタニティ・ドラゴン",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP059",
+    "nameJa": "水晶機巧－グリオンガンド",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP060",
+    "nameJa": "ライトストーム・ドラゴン",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP061",
+    "nameJa": "神影金龍ドラッグルクシオン",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP062",
+    "nameJa": "ＣＸ－Ｎ・Ａｓ・Ｃｈ Ｋｎｉｇｈｔ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP063",
+    "nameJa": "ＣＮｏ.１０４ 仮面魔踏士アンブラル",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP064",
+    "nameJa": "Ｎ・Ａｓ・Ｈ Ｋｎｉｇｈｔ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP065",
+    "nameJa": "Ｎｏ.１０４ 仮面魔踏士シャイニング",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP066",
+    "nameJa": "Ｎｏ.６５ 裁断魔人ジャッジ・バスター",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP067",
+    "nameJa": "トロイメア・フェニックス",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP068",
+    "nameJa": "トロイメア・ケルベロス",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP069",
+    "nameJa": "墓守の刻印",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP070",
+    "nameJa": "シンクロ・ランブル",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP071",
+    "nameJa": "時空の七皇",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP072",
+    "nameJa": "カオティック・エレメンツ",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP073",
+    "nameJa": "原石の鳴獰",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP074",
+    "nameJa": "原石の穿光",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP075",
+    "nameJa": "デッキロック",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP076",
+    "nameJa": "原石の皇脈",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP077",
+    "nameJa": "異次元グランド",
+    "rarities": "Super,Collectors"
+  },
+  {
+    "cardId": "LOCR-JP078",
+    "nameJa": "ウェルカム・ラビュリンス",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP079",
+    "nameJa": "列王詩篇",
+    "rarities": "Super,Ultimate"
+  },
+  {
+    "cardId": "LOCR-JP080",
+    "nameJa": "御前試合",
+    "rarities": "Super,Ultimate"
+  }
+]

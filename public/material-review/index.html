@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>日版 LOCR · 工艺审查</title>
+    <link rel="icon" type="image/png" href="../assets/theme-icon.png" />
+    <link rel="stylesheet" href="./review.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="../../"><span>LOCR</span><b>日版 · 工艺审查</b></a
+      ><a class="return" href="../locr-catalog/index.html">全卡图鉴 · 80种 ↗</a
+      ><a class="return" href="../../">返回游戏 ↗</a>
+    </header>
+    <main>
+      <nav aria-label="选择罕贵度">
+        <div class="rail-title">样卡 <span id="sample-total">09</span></div>
+        <label class="type-filter" for="card-type"
+          >卡片类型
+          <select id="card-type">
+            <option value="overview">工艺概览</option>
+            <option value="monster">怪兽卡</option>
+            <option value="spell">魔法卡</option>
+            <option value="trap">陷阱卡</option>
+          </select>
+        </label>
+        <div id="samples"></div>
+      </nav>
+      <section class="viewer" aria-label="卡面材质预览">
+        <div class="view-toolbar">
+          <div class="view-tabs">
+            <button id="single" aria-pressed="true">单张</button
+            ><button id="compare" aria-pressed="false">对比</button>
+          </div>
+          <button id="capture">导出图片 ↓</button>
+        </div>
+        <div id="stage"><span id="status" role="status">加载样卡…</span></div>
+        <footer><span>拖动 旋转</span><span>滚轮 缩放</span><span id="count">01 / 09</span></footer>
+      </section>
+      <aside>
+        <div class="selected-heading">
+          <div id="rarity">SR</div>
+          <span id="layout">通常卡框</span>
+        </div>
+        <h1 id="rarity-name">スーパーレア</h1>
+        <p id="card-name"></p>
+        <p class="card-id" id="card-id"></p>
+        <section class="control-block">
+          <h2>光源</h2>
+          <div
+            id="light-pad"
+            role="slider"
+            tabindex="0"
+            aria-label="拖动调节光源，方向键微调"
+            aria-valuemin="-80"
+            aria-valuemax="80"
+            aria-valuenow="-25"
+          >
+            <div class="pad-ring"></div>
+            <div class="pad-axis"></div>
+            <div id="light-dot"></div>
+          </div>
+          <label
+            >水平角 <output id="azimuth-value">−25°</output
+            ><input
+              id="azimuth"
+              aria-label="光源水平角"
+              type="range"
+              min="-80"
+              max="80"
+              value="-25"
+          /></label>
+          <label
+            >俯仰角 <output id="elevation-value">30°</output
+            ><input
+              id="elevation"
+              aria-label="光源俯仰角"
+              type="range"
+              min="-65"
+              max="65"
+              value="30"
+          /></label>
+          <label
+            >亮度 <output id="exposure-value">100%</output
+            ><input id="exposure" aria-label="光源亮度" type="range" min="60" max="150" value="100"
+          /></label>
+          <label
+            >环境亮度 <output id="ambient-value">25%</output
+            ><input id="ambient" aria-label="环境亮度" type="range" min="15" max="100" value="25"
+          /></label>
+        </section>
+        <section class="control-block switches">
+          <label><input id="foil" type="checkbox" checked /> 闪箔</label
+          ><label><input id="relief" type="checkbox" checked /> 浮雕</label>
+        </section>
+        <div class="actions">
+          <button id="turn" aria-pressed="false">自动转动</button
+          ><button id="back" aria-pressed="false">查看背面</button
+          ><button id="reset">重置视角</button>
+        </div>
+      </aside>
+    </main>
+    <script type="module" src="./review.js"></script>
+  </body>
+</html>

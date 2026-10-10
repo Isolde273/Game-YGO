@@ -1,0 +1,45 @@
+# Dependencies, packaged apps and generated test output
+/node_modules/
+/portable/
+/test-results/
+/dist/
+/build/
+/coverage/
+/playwright-report/
+
+# Local workspace settings and caches
+/.obsidian/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+*.blend[0-9]
+
+# Development chronology and old preview assets
+/VERIFICATION.md
+/art/audio/
+/art/blender/previous-procedural-scene.js
+/art/blender/*-detail.png
+/art/blender/card-shop-overview.png
+
+# Retain reference documentation and selected material generation inputs
+/research/**
+!/research/**/
+!/research/**/*.md
+!/research/locr-rates/locr-cardlist.txt
+!/research/locr-rates/finish-references/**
+!/research/locr-rates/correction-20261007/**
+!/research/locr-rates/revision-20261008/**
+!/research/locr-rates/verification-20261008/**
+
+# Keep data used by tests/user-card-prices.mjs and the current import source
+/outputs/**
+!/outputs/card-prices-20261010/
+!/outputs/card-prices-20261010/losp-filled-prices-audit.json
+!/outputs/card-prices-20261010/losp-merged-user-prices.csv
+
+# src/generated/, src/vendor/ and public/ are required; keep them tracked.

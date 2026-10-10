@@ -1,0 +1,9 @@
+{
+  "description": "v3 shader on the real JP LOCR prints, 400px wide, light elevation 15 degrees, azimuth -45 through 45 in 3-degree steps. Bright pixels require luminance >=240 and gain >=70 within foil coverage on ink with unlit luminance 12..180.",
+  "samples": [
+    {"id":"SER","peak":{"brightFraction":0.008065285864274125}},
+    {"id":"PSER","peak":{"brightFraction":0.009045957545212783}},
+    {"id":"GMR","peak":{"brightFraction":0.004011856468670804}},
+    {"id":"PSER-OF","peak":{"brightFraction":0.003944416298762394}}
+  ]
+}
