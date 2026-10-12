@@ -1,0 +1,267 @@
+/* Navigation is a horizontal strip; content uses the entire page width. */
+/* Collection and purchase use the viewport as their work area. */
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .topbar {
+  height: 60px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .brand-emblem {
+  width: 32px;
+  height: 32px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .brand b {
+  font-size: 18px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .brand small {
+  font-size: 8px;
+}
+body:is([data-page='album'], [data-page='shop']) .interface-workspace {
+  height: calc(100dvh - 84px);
+  min-height: 0;
+  padding: 0 24px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .workspace-rail {
+  height: 44px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .workspace-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 10px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .page-heading {
+  height: 42px;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .heading-number {
+  font-size: 42px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .heading-title
+  h1 {
+  font-size: 24px;
+  letter-spacing: 3px;
+  margin-top: 3px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .heading-title
+  > span {
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .heading-actions
+  .outline-button {
+  padding: 8px 12px;
+  min-height: 32px;
+  font-size: 10px;
+}
+body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+  .footer {
+  height: 24px;
+}
+@media (max-width: 700px) {
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .topbar {
+    height: 48px;
+    margin: 0 12px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .topbar .brand b {
+    font-size: 15px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .topbar .brand small {
+    display: none;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse']) .topbar .brand-emblem {
+    width: 28px;
+    height: 28px;
+  }
+  body:is([data-page='album'], [data-page='shop']) .interface-workspace {
+    height: calc(100dvh - 68px);
+    padding: 0 12px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .workspace-content {
+    padding: 8px 0 6px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .workspace-rail {
+    height: 44px;
+    gap: 10px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .mini-nav {
+    height: 44px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .mini-nav
+    button {
+    flex-direction: row;
+    gap: 4px;
+    padding: 7px 6px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .mini-nav
+    button
+    .icon {
+    width: 13px;
+    height: 13px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .mini-nav
+    button
+    small {
+    display: none;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .page-heading {
+    height: 34px;
+    margin-bottom: 8px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .heading-number {
+    font-size: 32px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .heading-title
+    h1 {
+    font-size: 20px;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .heading-title
+    > span {
+    display: none;
+  }
+  body:is([data-page='album'], [data-page='shop'], [data-page='warehouse'], [data-page='settings'])
+    .footer {
+    height: 20px;
+    padding: 0 12px;
+  }
+}
+.interface-workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 116px);
+  max-width: 1740px;
+  margin: auto;
+  padding: 0 36px;
+}
+.workspace-rail {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  height: 62px;
+  flex-shrink: 0;
+}
+.rail-home {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.rail-home .icon {
+  width: 17px;
+  height: 17px;
+}
+.mini-nav {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  gap: 5px;
+}
+.mini-nav button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 22px;
+  color: var(--muted);
+  position: relative;
+  font-size: 12px;
+}
+.mini-nav button .icon {
+  width: 18px;
+  height: 18px;
+}
+.mini-nav button small {
+  font:
+    10px ArchiveDisplay,
+    sans-serif;
+  opacity: 0.7;
+  margin-left: 3px;
+}
+.mini-nav button.active {
+  color: var(--ink);
+  background: var(--cyan);
+  font-weight: 900;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+.mini-nav button:hover:not(.active) {
+  color: var(--ice);
+  background: #1450ae88;
+}
+.rail-bottom {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.rail-bottom .icon {
+  width: 13px;
+  height: 13px;
+  color: var(--lime);
+}
+.workspace-content {
+  padding: 34px 0 20px;
+  min-width: 0;
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  gap: 16px;
+}
+.page-heading > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.heading-number {
+  font:
+    72px/0.9 ArchiveDisplay,
+    sans-serif;
+  letter-spacing: -3px;
+  color: var(--cyan);
+}
+.heading-title {
+  transform: skew(-8deg);
+  border-left: 1px solid var(--line);
+  padding-left: 20px;
+}
+.heading-title > span {
+  font:
+    12px ArchiveDisplay,
+    sans-serif;
+  letter-spacing: 4px;
+  color: var(--cyan);
+}
+.heading-title h1 {
+  font-size: 36px;
+  letter-spacing: 5px;
+  line-height: 1.15;
+  margin-top: 5px;
+  font-weight: 900;
+}
+.heading-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
