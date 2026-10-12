@@ -39,7 +39,7 @@ export function createMotionPlayer(motion, playbackRate = () => 1) {
   async function play(
     element,
     keyframes,
-    { duration = 280, delay = 0, easing = ease, hold = false } = {},
+    { duration = 280, delay = 0, easing = ease, hold = false, onStart = () => {} } = {},
   ) {
     if (!element?.isConnected || !enabled()) return;
     const previous = element.style.willChange;
@@ -50,10 +50,12 @@ export function createMotionPlayer(motion, playbackRate = () => 1) {
     trackFinishMotion(animation);
     animation.playbackRate = playbackRate();
     active.add(animation);
+    const cleanup = onStart(animation);
     try {
       await animation.finished;
     } catch {
     } finally {
+      cleanup?.();
       if (!hold) {
         active.delete(animation);
         animation.cancel();

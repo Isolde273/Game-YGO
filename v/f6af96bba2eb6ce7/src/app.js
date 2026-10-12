@@ -289,7 +289,8 @@ function initWorld() {
           prepareFinishes: (host, options) =>
             cardFinishes.prepare(host, { ...options, incremental: true, sortingEntry: true }),
           completeFinishes: (host) => cardFinishes.complete(host),
-          warmFinishes: (cards) => cardFinishes.warm(cards),
+          warmFinishes: (cards, options) => cardFinishes.warm(cards, options),
+          prefetchFinishes: (cards) => cardFinishes.prefetch(cards),
           navigate: (next) => {
             if (next === 'shop') phoneApp = '';
             render(next);

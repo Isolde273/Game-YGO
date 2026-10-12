@@ -120,6 +120,7 @@ class UnboxingWorld {
     this.renderer.info.autoReset = false;
     this.renderer.toneMappingExposure = (0.85 * options.state.settings.brightness) / 85;
     this.canvas = this.renderer.domElement;
+    this.canvas.dataset.finishWarmIdle = 'false';
     this.canvas.className = 'world3d-canvas';
     this.canvas.tabIndex = 0;
     this.canvas.setAttribute(
@@ -1774,6 +1775,8 @@ class UnboxingWorld {
     this.syncAccessibility();
   }
   createPackOpening(records, result, flatQ) {
+    // Download the known stack during the opening; no decode/GPU work here.
+    this.options.prefetchFinishes?.(result.cards);
     const focus = new THREE.Vector3().copy(records[0].body.position),
       fromQ = new THREE.Quaternion().copy(records[0].body.quaternion);
     const model = new THREE.Group();
@@ -2497,7 +2500,7 @@ class UnboxingWorld {
         stack = hit?.stack ?? null;
       if (this.hover !== record || this.hoverStack !== stack) {
         this.needsRender = true;
-        if (stack?.ready) this.options.warmFinishes?.(stack.data.cards);
+        if (stack?.ready) this.options.warmFinishes?.(stack.data.cards, { prefetchPriority: 1 });
       }
       this.hover = record;
       this.hoverStack = stack;
@@ -2529,6 +2532,11 @@ class UnboxingWorld {
     const moving = this.physics.bodies.some(
       (b) => b.type === CANNON.Body.DYNAMIC && b.sleepState !== CANNON.Body.SLEEPING,
     );
+    const finishWarmIdle = String(
+      !moving && !this.animations.length && !this.drag && !this.pointer && !this.zoomActive,
+    );
+    if (this.canvas.dataset.finishWarmIdle !== finishWarmIdle)
+      this.canvas.dataset.finishWarmIdle = finishWarmIdle;
     if (moving) {
       this.physics.step(1 / 60, dt, 2);
       this.stats.physicsSteps++;

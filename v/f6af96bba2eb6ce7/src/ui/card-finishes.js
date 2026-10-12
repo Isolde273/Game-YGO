@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
-import { createGameFinishLibrary } from '../scene/game-card-finishes.js';
+import { cardFinishTextureURLs, createGameFinishLibrary } from '../scene/game-card-finishes.js';
+import { prefetchTextureImages, textureImageStats } from '../scene/texture-images.js';
 import { createFinishBatchRenderer } from './card-finish-batch.js';
 import { movingFinishImages } from './motion/finish-motion.js';
 import {
@@ -19,6 +20,11 @@ export function measureInspectorSpread(group) {
     last = images.at(-1);
   const start = first.getBoundingClientRect(),
     end = last.getBoundingClientRect();
+  const progressive = group.dataset.progressive === 'true';
+  // clientWidth rounds fractional responsive sizes to integers. Use the CSS
+  // width so slot offsets retain the same scale after a narrow resize.
+  const cssWidth = progressive ? parseFloat(getComputedStyle(first).width) : 0;
+  const scale = cssWidth ? start.width / cssWidth : 1;
   const offsetOf = (image) =>
     parseFloat(image.parentElement.style.getPropertyValue('--card-offset')) || 0;
   const origin = offsetOf(first),
@@ -28,7 +34,9 @@ export function measureInspectorSpread(group) {
     rects.set(
       image,
       new DOMRect(
-        start.left + (end.left - start.left) * fraction,
+        progressive
+          ? Math.max(start.left, end.left + offsetOf(image) * scale)
+          : start.left + (end.left - start.left) * fraction,
         start.top + (end.top - start.top) * fraction,
         start.width,
         start.height,
@@ -78,6 +86,8 @@ export function createCardFinishes(root, settings) {
     warmRun = 0,
     warmHandles = [],
     programsReady = null;
+  let prefetchKey = '',
+    stackPrefetch = null;
   let programPriority = 0;
   let completionPixelBudget = 32768;
   let lastCompletionFrame = 0;
@@ -128,11 +138,25 @@ export function createCardFinishes(root, settings) {
     });
     return Promise.all(ready);
   }
-  function warm(records) {
+  function prefetch(records, { priority = 0 } = {}) {
+    if (disposed) return;
+    const urls = cardFinishTextureURLs(records);
+    // Physical alignment may reorder cards without changing the resource set.
+    const key = [...urls].sort().join('|');
+    if (key === prefetchKey) {
+      stackPrefetch?.promote(priority);
+      return;
+    }
+    stackPrefetch?.cancel();
+    prefetchKey = key;
+    stackPrefetch = urls.length ? prefetchTextureImages(urls, { priority }) : null;
+  }
+  function warm(records, { prefetchPriority = 0 } = {}) {
+    prefetch(records, { priority: prefetchPriority });
     // Repeated prints share one material and its textures; warm each only once.
-    // A web visit must not queue an entire saved stack ahead of the next pack.
-    // The inspector loads rear cards in its own ordered preparation batches.
-    const candidates = records.slice(document.documentElement.dataset.webRelease ? -1 : -8);
+    // Only a small near-top set is decoded/uploaded before entry. Downloads
+    // for the rest remain compressed until the inspector requests them.
+    const candidates = records.slice(document.documentElement.dataset.webRelease ? -4 : -8);
     const unique = new Map(
       [...candidates].reverse().map((card) => [`${card.printId}:${card.serial ?? ''}`, card]),
     );
@@ -146,9 +170,18 @@ export function createCardFinishes(root, settings) {
     // time. Foreground preparation promotes any shared image already queued.
     const load = async () => {
       const records = [...unique.values()];
-      const valid = () => !disposed && token === warmRun;
+      const valid = () => !disposed && token === warmRun && !root.querySelector('.card-inspector');
       for (const [index, record] of records.entries()) {
         const priority = index === 0 ? 1 : 0;
+        const waitIdle = async () => {
+          while (
+            valid() &&
+            priority === 0 &&
+            root.querySelector('canvas[data-finish-warm-idle="false"]')
+          )
+            await nextFrame();
+        };
+        await waitIdle();
         await scheduleResourceTask(() => {}, { priority, valid });
         if (!valid()) return;
         const handle = library.acquire(record, { priority });
@@ -156,8 +189,10 @@ export function createCardFinishes(root, settings) {
         warmHandles.push(handle);
         await handle.ready
           .then(async () => {
+            await waitIdle();
             if (!valid()) return;
             await preparePrograms(handle.material, priority);
+            await waitIdle();
             if (valid()) await uploadMaterial(handle.material, valid, priority);
           })
           .catch(() => {});
@@ -400,7 +435,10 @@ export function createCardFinishes(root, settings) {
     }
     // Spread frames keep visible lighting first, then fill one small hidden
     // suffix. Other moving/dragged cards and recent interactions still yield.
-    const completingDuringEntry = enteringImages.size > 0 && backgroundResourcesAllowed();
+    const completingDuringEntry =
+      enteringImages.size > 0 &&
+      !root.querySelector('.card-inspector[data-finish-preparing]') &&
+      backgroundResourcesAllowed();
     const eligible = (view) =>
       (view.visible || enteringImages.has(view.image)) &&
       (view.image.closest('.card-inspector')?.dataset.phase === 'open' ||
@@ -806,23 +844,47 @@ export function createCardFinishes(root, settings) {
   return {
     refresh,
     warm,
+    prefetch,
     complete,
     async prepare(
       host,
-      { incremental = false, sortingEntry = false, onFirstReady = () => {} } = {},
+      {
+        incremental = false,
+        sortingEntry = false,
+        onFirstReady = () => {},
+        onBatchReady = () => {},
+        signal,
+      } = {},
     ) {
       if (!host || disposed) return;
+      const valid = () =>
+        !disposed && !signal?.aborted && host.isConnected && host.dataset.phase !== 'closing';
       if (!incremental || !sortingEntry)
         await Promise.all(
           [...host.querySelectorAll('img')].map((image) => image.decode().catch(() => {})),
         );
-      if (disposed || !host.isConnected) return;
+      if (!valid()) return;
       scan();
       const prepared = [...views.values()].filter((view) => host.contains(view.image));
+      if (sortingEntry) host.dataset.finishPreparing = 'true';
+      let downloadingAhead = null;
+      let cancel;
+      const cancelled = new Promise((resolve) => (cancel = resolve));
+      signal?.addEventListener('abort', cancel, { once: true });
+      const wait = (promise) => (signal ? Promise.race([promise, cancelled]) : promise);
       try {
         for (const view of prepared) view.preparing = true;
         // Render at the final layout and light position before committing these nodes.
         const ordered = [...prepared].reverse();
+        if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
+          // This producer fills the bounded network window independently of
+          // two-card uploads/draws. It downloads bytes only, never hidden GPUs.
+          const records = prepared.map((view) => ({ printId: view.image.dataset.finishPrint }));
+          downloadingAhead = prefetchTextureImages(cardFinishTextureURLs(records), {
+            priority: 1,
+            concurrency: 16,
+          });
+        }
         // Two rear strips keep the first draw small, while sharing their atlas
         // copy. The complete top card is always prepared separately first.
         const count = incremental ? 2 : Math.max(1, ordered.length);
@@ -831,16 +893,24 @@ export function createCardFinishes(root, settings) {
           // remaining strips' decoding, texture uploads and initial drawing.
           const batch = ordered.slice(i, i + (i === 0 && sortingEntry ? 1 : count));
           for (const view of batch) activate(view, i === 0 ? 3 : 2);
-          await Promise.allSettled(
-            batch.map(async (view) => {
-              await view.image.decode().catch(() => {});
-              await view.handle?.ready;
-            }),
+          await wait(
+            Promise.allSettled(
+              batch.map(async (view) => {
+                await view.image.decode().catch(() => {});
+                await view.handle?.ready;
+              }),
+            ),
           );
-          if (disposed || !host.isConnected) return;
+          if (!valid()) return;
+          // Start the next bounded decode window before this pair uploads or
+          // paints; network prefetch keeps advancing even while drawing waits.
+          if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
+            for (const upcoming of ordered.slice(i + batch.length, i + batch.length + 6))
+              activate(upcoming, 1);
+          }
           if (incremental && i === 0 && batch[0]?.handle)
-            await preparePrograms(batch[0].handle.material);
-          if (disposed || !host.isConnected) return;
+            await wait(preparePrograms(batch[0].handle.material));
+          if (!valid()) return;
           if (incremental && sortingEntry && i === 0 && renderer) {
             // Growing gaps used to resize the shared WebGL buffer repeatedly
             // during the fan. Reserve its bounded maximum before any flight or
@@ -879,32 +949,31 @@ export function createCardFinishes(root, settings) {
                 jobs.push({ ...jobs[0], renderW: jobs[0].w });
                 batchRenderer.reserveFor(jobs);
               },
-              { valid: () => !disposed && host.isConnected },
+              { valid },
             );
           }
-          if (disposed || !host.isConnected) return;
+          if (!valid()) return;
           if (incremental)
-            await Promise.all(
-              batch
-                .filter((view) => view.handle?.material.userData.ready)
-                .map((view) =>
-                  uploadMaterial(view.handle.material, () => !disposed && host.isConnected),
-                ),
+            await wait(
+              Promise.all(
+                batch
+                  .filter((view) => view.handle?.material.userData.ready)
+                  .map((view) => uploadMaterial(view.handle.material, valid)),
+              ),
             );
           if (incremental) await nextFrame();
-          if (disposed || !host.isConnected) return;
+          if (!valid()) return;
           cancelAnimationFrame(frame);
           draw(batch, { sortingEntry });
+          for (const view of batch) view.preparing = false;
           if (i === 0) onFirstReady();
           i += batch.length;
-          // Overlap a bounded window of downloads with the current batch's
-          // decoding/uploads. Keep the first full card ahead of rear assets;
-          // only the active pair is uploaded or painted by this preparation loop.
-          if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
-            for (const upcoming of ordered.slice(i, i + 6)) activate(upcoming, 1);
-          }
+          onBatchReady(i);
         }
       } finally {
+        signal?.removeEventListener('abort', cancel);
+        downloadingAhead?.cancel();
+        delete host.dataset.finishPreparing;
         for (const view of prepared) view.preparing = false;
         schedule();
       }
@@ -921,10 +990,12 @@ export function createCardFinishes(root, settings) {
       ),
       contexts: renderer ? 1 : 0,
       resources: resourceSchedulerStats(),
+      images: textureImageStats(),
       completionPixelBudget,
     }),
     dispose() {
       disposed = true;
+      stackPrefetch?.cancel();
       ++warmRun;
       warmHandles.forEach((handle) => handle.release());
       warmHandles = [];

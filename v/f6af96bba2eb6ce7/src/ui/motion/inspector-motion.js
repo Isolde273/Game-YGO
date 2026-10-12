@@ -32,6 +32,7 @@ export function createInspectorMotion(host, view, { motion, source }) {
   let layer = null,
     flight = null,
     spreadGroups = [],
+    stopSpreadReadiness = null,
     disposed = false,
     run = 0;
   const enabled = () => player.enabled();
@@ -53,7 +54,7 @@ export function createInspectorMotion(host, view, { motion, source }) {
       rect.height,
     );
   }
-  function groupSpread() {
+  function groupSpread(readiness) {
     const stage = view.querySelector('.inspect-card-stage');
     const cards = [...stage.querySelectorAll('.inspect-card')];
     const element = document.createElement('div');
@@ -64,11 +65,55 @@ export function createInspectorMotion(host, view, { motion, source }) {
     // The animation fills its initial value during the delay. Keep the base
     // at its destination so cancelling a finished track cannot collapse it.
     element.style.setProperty('--inspect-spread', '1');
+    if (readiness) {
+      element.dataset.progressive = 'true';
+      const update = () =>
+        element.style.setProperty('--inspect-ready-spread', readiness.fraction());
+      update();
+      stopSpreadReadiness = readiness.subscribe(update);
+    }
     return spreadGroups;
   }
   function restoreSpread() {
+    stopSpreadReadiness?.();
+    stopSpreadReadiness = null;
     for (const group of spreadGroups) group.replaceWith(...group.children);
     spreadGroups = [];
+  }
+  function gateSpread(animation, readiness, token) {
+    const { delay, duration } = animation.effect.getTiming();
+    let frame = 0,
+      gated = false;
+    const update = () => {
+      if (
+        disposed ||
+        token !== run ||
+        animation.playState === 'finished' ||
+        animation.playState === 'idle'
+      )
+        return;
+      const limit = delay + duration * readiness.fraction();
+      if (readiness.fraction() < 1 && Number(animation.currentTime) >= limit) {
+        if (!gated || Number(animation.currentTime) > limit + 0.001) {
+          animation.currentTime = limit;
+          animation.pause();
+        }
+        gated = true;
+      } else if (gated) {
+        gated = false;
+        animation.play();
+      }
+    };
+    const tick = () => {
+      update();
+      frame = requestAnimationFrame(tick);
+    };
+    const unsubscribe = readiness.subscribe(update);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      unsubscribe();
+    };
   }
   function tableQuad() {
     const quad = source()?.quad;
@@ -137,7 +182,7 @@ export function createInspectorMotion(host, view, { motion, source }) {
       ),
     );
   }
-  async function enter({ firstReady, prepared, onFlight, onPrepared }) {
+  async function enter({ firstReady, prepared, readiness, onFlight, onPrepared }) {
     const token = ++run;
     if (!enabled()) {
       await firstReady;
@@ -204,7 +249,8 @@ export function createInspectorMotion(host, view, { motion, source }) {
       player.play(flight, [{ transform: origin }, { transform: target }], { duration: 480 }),
       ...sweep(false),
     ];
-    await prepared;
+    if (readiness) await readiness.wait(2);
+    else await prepared;
     if (disposed || token !== run) return;
     // A resize while textures load can change the slot width. Rebuild the
     // collapsed layout before exposing any partially painted card.
@@ -214,7 +260,7 @@ export function createInspectorMotion(host, view, { motion, source }) {
       player.finish();
       flight.style.transform = readyTarget;
     }
-    const groups = groupSpread();
+    const groups = groupSpread(readiness);
     onPrepared();
     const elapsed = performance.now() - started,
       delay = (at) => Math.max(0, at - elapsed);
@@ -224,7 +270,7 @@ export function createInspectorMotion(host, view, { motion, source }) {
     await Promise.all([
       ...intro,
       ...flying,
-      // Keep the complete flight card until every exposed fan strip is ready.
+      // The ready prefix covers every unfinished card while the fan grows.
       player.play(flight, [{ opacity: 1 }, { opacity: 0 }], {
         duration: 100,
         delay: delay(380),
@@ -241,20 +287,21 @@ export function createInspectorMotion(host, view, { motion, source }) {
           { duration: 220, delay: delay(270 + i * 20) },
         ),
       ),
-      // All cards start at exactly the same left edge. One inherited progress
-      // spreads their final offsets rightward without exposing any left fan.
-      // Neighbour gaps remain within the prepared eighth throughout.
+      // Reveal from the top. Unready rear cards remain fully overlapped at
+      // the left edge; every exposed neighbour gap fits its painted eighth.
       ...groups.map((el) => {
         const track = player.play(el, [{ '--inspect-spread': 0 }, { '--inspect-spread': 1 }], {
           duration: el.querySelectorAll('.inspect-card').length * 16,
           delay: delay(450) + 110,
-          easing: 'ease-in-out',
+          easing: readiness ? 'linear' : 'ease-in-out',
+          onStart: readiness ? (animation) => gateSpread(animation, readiness, token) : undefined,
         });
         // This inherited progress is not a transform layer. A transform hint
         // would make fixed-position early drags relative to this group.
         el.style.removeProperty('will-change');
         return track;
       }),
+      prepared,
     ]);
     if (!disposed && token === run) {
       restoreSpread();

@@ -42,7 +42,7 @@ function flush() {
   const start = performance.now();
   const spreading =
     typeof document !== 'undefined' &&
-    !!document.querySelector('.card-inspector[data-phase="entering"]');
+    !!document.querySelector('.card-inspector[data-phase="entering"]:not([data-finish-preparing])');
   const limit = spreading ? 1 : 2;
   const budgetMs = spreading ? 2 : 4;
   let count = 0;

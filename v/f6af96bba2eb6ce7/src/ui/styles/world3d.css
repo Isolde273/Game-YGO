@@ -559,6 +559,11 @@ body[data-page='open']:has(.card-inspector) #toast {
   inherits: true;
   initial-value: 1;
 }
+@property --inspect-ready-spread {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
 .inspect-spread-group {
   position: absolute;
   inset: 0;
@@ -589,6 +594,18 @@ body[data-page='open']:has(.card-inspector) #toast {
   height: 100%;
   object-fit: fill;
   pointer-events: none;
+}
+.inspect-spread-group[data-progressive] > .inspect-card {
+  transform: translateX(
+    calc(
+      -50% - var(--fan-width) +
+        max(
+          0px,
+          var(--fan-width) * min(var(--inspect-spread), var(--inspect-ready-spread)) +
+            var(--card-offset)
+        )
+    )
+  );
 }
 .inspect-card > .foil {
   pointer-events: none;

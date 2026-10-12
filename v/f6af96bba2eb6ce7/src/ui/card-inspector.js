@@ -13,6 +13,7 @@ import {
   serialLabel,
 } from './card-surfaces.js';
 import { createInspectorMotion } from './motion/inspector-motion.js';
+import { createInspectorReadiness } from './motion/inspector-readiness.js';
 import { createMotionPlayer } from './motion/motion-player.js';
 import { getCardPrice } from '../game/card-prices.js';
 
@@ -35,6 +36,7 @@ export function createCardInspector(
 ) {
   const previousFocus = document.activeElement,
     view = document.createElement('section');
+  const preparationController = new AbortController();
   view.className = 'card-inspector';
   view.dataset.phase = 'preparing';
   view.inert = true;
@@ -511,6 +513,7 @@ export function createCardInspector(
     return presented;
   }
   function dispose() {
+    preparationController.abort();
     closed = true;
     cancelDrag();
     localMotion.dispose();
@@ -520,6 +523,7 @@ export function createCardInspector(
   }
   function close(playSound = true) {
     if (closed || closing) return closing;
+    preparationController.abort();
     if (['preparing', 'loading'].includes(view.dataset.phase)) {
       dispose();
       return;
@@ -646,14 +650,26 @@ export function createCardInspector(
   renderCards();
   let firstPrepared;
   const firstReady = new Promise((resolve) => (firstPrepared = resolve));
+  const readiness = createInspectorReadiness(stack.cards.length);
   view.dataset.phase = 'loading';
-  const prepared = Promise.resolve(prepare(view, { onFirstReady: firstPrepared })).then(() =>
-    firstPrepared(),
-  );
+  const prepared = Promise.resolve(
+    prepare(view, {
+      signal: preparationController.signal,
+      onFirstReady: firstPrepared,
+      onBatchReady: (count) => {
+        readiness.advance(count);
+        view.dataset.readyCount = String(count);
+      },
+    }),
+  ).then(() => {
+    firstPrepared();
+    readiness.finish();
+  });
   const ready = motion
     .enter({
       firstReady,
       prepared,
+      readiness,
       onFlight: () => {
         if (!closed) onEnter();
       },
