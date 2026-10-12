@@ -237,7 +237,8 @@ export function createCardFinishes(root, settings) {
       preserveDrawingBuffer: false,
       powerPreference: 'high-performance',
     });
-    renderer.setPixelRatio(1);
+    // The new renderer already uses DPR 1. Reapplying it resizes and clears
+    // its hidden default buffer before the batch renderer reserves real tiles.
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.12;

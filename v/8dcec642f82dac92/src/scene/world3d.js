@@ -110,7 +110,8 @@ class UnboxingWorld {
       alpha: false,
       powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(this.quality.ratio);
+    // applyRenderSize sets the full requested DPR before the first draw. Avoid
+    // reallocating the default, hidden 300x150 buffer during construction.
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.shadowMap.autoUpdate = false;
@@ -277,6 +278,8 @@ class UnboxingWorld {
         if (this.disposed) return;
         await prepareRenderer(this.renderer, this.scene, this.camera, () => !this.disposed);
         if (this.disposed) return;
+        await this.preparePackageSamples(this.options.state.items);
+        if (this.disposed) return;
         this.damageRenderer = createRoomDamage(
           this.renderer,
           this.scene,
@@ -290,7 +293,13 @@ class UnboxingWorld {
             this.applyRenderSize();
             // Prime the complete native-buffer pipeline while the canvas is
             // hidden. The next delivered frame is the first visible room frame.
-            this.damageRenderer.render();
+            for (const model of this.warmPackages) this.scene.add(model);
+            try {
+              this.damageRenderer.render();
+            } finally {
+              for (const model of this.warmPackages) this.scene.remove(model);
+            }
+            this.damageRenderer.invalidate();
           },
           { valid: () => !this.disposed },
         );
@@ -2379,10 +2388,60 @@ class UnboxingWorld {
     this.lastSave = this.elapsed;
     this.options.save();
   }
+  async preparePackageSamples(items) {
+    this.warmPackages ??= [];
+    this.warmedPackageTypes ??= new Set();
+    const pending = [];
+    for (const item of items) {
+      const set = itemProduct(item).set;
+      for (const kind of item.kind === 'case'
+        ? ['case', 'box', 'pack']
+        : item.kind === 'box'
+          ? ['box', 'pack']
+          : [item.kind]) {
+        const key = `${set}:${kind}`;
+        if (this.warmedPackageTypes.has(key)) continue;
+        this.warmedPackageTypes.add(key);
+        const model = this.library.create(kind, true, set);
+        model.position.set(0, 1, 0);
+        this.warmPackages.push(model);
+        pending.push(model);
+        await prepareRenderer(this.renderer, model, this.camera, () => !this.disposed, this.scene);
+        if (this.disposed) return [];
+      }
+    }
+    return pending;
+  }
   async syncPurchasedItems() {
     if (this.disposed || !this.library) return;
     try {
       await this.library.prepareSets(this.options.state.items.map((item) => itemProduct(item).set));
+      const pending = await this.preparePackageSamples(this.options.state.items);
+      if (!this.disposed && pending.length) {
+        await scheduleResourceTask(
+          () => {
+            const target = new THREE.WebGLRenderTarget(1, 1);
+            target.texture.colorSpace = THREE.SRGBColorSpace;
+            const previous = this.renderer.getRenderTarget();
+            const scissor = this.renderer.getScissorTest();
+            const shadowUpdate = this.renderer.shadowMap.needsUpdate;
+            for (const model of pending) this.scene.add(model);
+            try {
+              this.renderer.setRenderTarget(target);
+              this.renderer.setScissorTest(false);
+              this.renderer.shadowMap.needsUpdate = false;
+              this.renderer.render(this.scene, this.camera);
+            } finally {
+              for (const model of pending) this.scene.remove(model);
+              this.renderer.setRenderTarget(previous);
+              this.renderer.setScissorTest(scissor);
+              this.renderer.shadowMap.needsUpdate = shadowUpdate;
+              target.dispose();
+            }
+          },
+          { valid: () => !this.disposed },
+        );
+      }
     } catch (error) {
       if (!this.disposed) this.options.toast('新包装素材加载失败，请重新进入开盒空间。');
       return;
@@ -2901,6 +2960,7 @@ class UnboxingWorld {
       if (a.bundle) this.disposeUnique(a.bundle);
     }
     this.containers.forEach((c) => this.disposeUnique(c.model));
+    this.warmPackages?.forEach((model) => this.disposeUnique(model));
     this.tableStacks.forEach((s) => {
       if (s.visual) this.disposeUnique(s.visual);
     });
