@@ -1,0 +1,26 @@
+{
+  "tool": "@gltf-transform/cli@4.5.1",
+  "commands": [
+    "gltf-transform weld card-shop.glb room-welded.glb",
+    "gltf-transform simplify room-welded.glb room-simplified.glb --ratio 0.06 --error 0.15",
+    "gltf-transform resize room-simplified.glb card-shop-web.glb --width 256 --height 256"
+  ],
+  "models": [
+    {
+      "name": "card-shop.glb",
+      "bytes": 5914004,
+      "sha256": "60b7103e63c5a1be0c2269f9b55ed47a33f378b33e0681309dbc36e38c6d2ad5",
+      "triangles": 198576,
+      "nodes": 100,
+      "materials": 25
+    },
+    {
+      "name": "card-shop-web.glb",
+      "bytes": 776456,
+      "sha256": "0042956e2db6ecf1aa8ba86c321f5ea917836c230ce9faf8193c1b31089e7c24",
+      "triangles": 15470,
+      "nodes": 100,
+      "materials": 25
+    }
+  ]
+}
