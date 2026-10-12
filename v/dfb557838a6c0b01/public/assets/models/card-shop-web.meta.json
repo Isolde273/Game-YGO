@@ -1,0 +1,82 @@
+{
+  "tool": "@gltf-transform/core/functions@4.5.1, meshoptimizer@1.2.0",
+  "command": "node scripts/build-gameplay-room.mjs --tooling <isolated tooling directory>",
+  "models": [
+    {
+      "name": "card-shop.glb",
+      "bytes": 5914004,
+      "sha256": "60b7103e63c5a1be0c2269f9b55ed47a33f378b33e0681309dbc36e38c6d2ad5"
+    },
+    {
+      "name": "card-shop-web.glb",
+      "bytes": 224824,
+      "sha256": "f080bf3e8cbef404d9d4d80ee5d3be7845497b211239020595f4c738437bb5b1"
+    }
+  ],
+  "groups": [
+    {
+      "group": "Binder",
+      "triangles": 2064
+    },
+    {
+      "group": "BinderCover",
+      "triangles": 844
+    },
+    {
+      "group": "Desk",
+      "triangles": 662
+    },
+    {
+      "group": "Mat",
+      "triangles": 900
+    },
+    {
+      "group": "Phone",
+      "triangles": 388
+    },
+    {
+      "group": "PhonePad",
+      "triangles": 82
+    },
+    {
+      "group": "Warehouse",
+      "triangles": 868
+    },
+    {
+      "group": "WarehouseFlapBack",
+      "triangles": 112
+    },
+    {
+      "group": "WarehouseFlapFront",
+      "triangles": 112
+    }
+  ],
+  "triangles": 6032,
+  "detail": {
+    "Binder": {
+      "ratio": 0.12,
+      "error": 0.035
+    },
+    "BinderCover": {
+      "ratio": 0.16,
+      "error": 0.035
+    },
+    "Warehouse": {
+      "ratio": 0.2,
+      "error": 0.035
+    },
+    "WarehouseFlapFront": {
+      "ratio": 0.3,
+      "error": 0.035
+    },
+    "WarehouseFlapBack": {
+      "ratio": 0.3,
+      "error": 0.035
+    }
+  },
+  "defaultSimplification": {
+    "ratio": 0.06,
+    "error": 0.15
+  },
+  "maximumTextureSize": 256
+}
