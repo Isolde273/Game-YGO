@@ -277,6 +277,54 @@ class UnboxingWorld {
         if (this.disposed) return;
         await prepareRenderer(this.renderer, this.scene, this.camera, () => !this.disposed);
         if (this.disposed) return;
+        const packageTypes = new Map();
+        for (const item of this.options.state.items) {
+          const set = itemProduct(item).set;
+          for (const kind of item.kind === 'case'
+            ? ['case', 'box', 'pack']
+            : item.kind === 'box'
+              ? ['box', 'pack']
+              : [item.kind])
+            packageTypes.set(`${set}:${kind}`, { kind, set });
+        }
+        this.warmPackages = [];
+        for (const { kind, set } of packageTypes.values()) {
+          const model = this.library.create(kind, true, set);
+          model.position.set(0, 1, 0);
+          this.warmPackages.push(model);
+          await prepareRenderer(
+            this.renderer,
+            model,
+            this.camera,
+            () => !this.disposed,
+            this.scene,
+          );
+          if (this.disposed) return;
+        }
+        this.damageRenderer = createRoomDamage(
+          this.renderer,
+          this.scene,
+          this.camera,
+          this.keyLight,
+          this.desk.root,
+        );
+        await this.damageRenderer.prepare(() => !this.disposed);
+        await scheduleResourceTask(
+          () => {
+            this.applyRenderSize();
+            // Prime the complete native-buffer pipeline while the canvas is
+            // hidden. The next delivered frame is the first visible room frame.
+            for (const model of this.warmPackages) this.scene.add(model);
+            try {
+              this.damageRenderer.render();
+            } finally {
+              for (const model of this.warmPackages) this.scene.remove(model);
+            }
+            this.damageRenderer.invalidate();
+          },
+          { valid: () => !this.disposed },
+        );
+        if (this.disposed) return;
         this.renderPrepared = true;
         if (this.scaleMigrated) this.organize({ silent: true });
         else if (this.viewClamped) this.persist();
@@ -2388,6 +2436,13 @@ class UnboxingWorld {
       this.frame = 0;
     } else this.wake();
   }
+  applyRenderSize() {
+    if (!this.renderSize) return;
+    const { width, height } = this.renderSize;
+    this.renderer.setDrawingBufferSize(width, height, this.quality.ratio);
+    this.stats.bufferResizes = (this.stats.bufferResizes ?? 0) + 1;
+    this.renderSize = null;
+  }
   tick(now) {
     if (this.disposed || this.navigationPaused) return;
     this.frame = 0;
@@ -2517,12 +2572,7 @@ class UnboxingWorld {
     if (this.shadowDirty && !moving && !this.animations.length && !this.effects.length)
       this.needsRender = true;
     if (this.needsRender && !obscured && this.renderPrepared) {
-      if (this.renderSize) {
-        const { width, height } = this.renderSize;
-        this.renderer.setDrawingBufferSize(width, height, this.quality.ratio);
-        this.stats.bufferResizes = (this.stats.bufferResizes ?? 0) + 1;
-        this.renderSize = null;
-      }
+      this.applyRenderSize();
       // A cached shadow from the previous pose can shade the moving object
       // itself on alternating frames. Keep manipulation and falling in sync.
       const updateShadow =
@@ -2536,19 +2586,13 @@ class UnboxingWorld {
       this.renderer.info.reset();
       this.camera.layers.set(0);
       this.library?.updateCardLight(this.keyLight.position);
-      this.damageRenderer ??= createRoomDamage(
-        this.renderer,
-        this.scene,
-        this.camera,
-        this.keyLight,
-      );
-      this.damageRenderer.render();
-      this.stats.renders++;
+      const rendered = this.damageRenderer.render({ allowSkip: true });
+      if (rendered) this.stats.renders++;
       this.needsRender = false;
       if (updateShadow) {
         this.shadowDirty = false;
         this.lastShadowAt = now;
-        this.stats.shadowUpdates++;
+        if (rendered) this.stats.shadowUpdates++;
       }
       if (this.canvas.dataset.ready === 'true') {
         this.canvas.dataset.presented = 'true';
@@ -2887,6 +2931,7 @@ class UnboxingWorld {
       if (a.bundle) this.disposeUnique(a.bundle);
     }
     this.containers.forEach((c) => this.disposeUnique(c.model));
+    this.warmPackages?.forEach((model) => this.disposeUnique(model));
     this.tableStacks.forEach((s) => {
       if (s.visual) this.disposeUnique(s.visual);
     });
