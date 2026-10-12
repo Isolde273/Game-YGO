@@ -841,6 +841,48 @@ export function createCardFinishes(root, settings) {
           if (incremental && i === 0 && batch[0]?.handle)
             await preparePrograms(batch[0].handle.material);
           if (disposed || !host.isConnected) return;
+          if (incremental && sortingEntry && i === 0 && renderer) {
+            // Growing gaps used to resize the shared WebGL buffer repeatedly
+            // during the fan. Reserve its bounded maximum before any flight or
+            // fan drawing, using the same tile layout as the actual renderer.
+            await scheduleResourceTask(
+              () => {
+                const jobs = ordered.map((view, index) => {
+                  const width = view.image.clientWidth,
+                    height = view.image.clientHeight;
+                  const ratio =
+                    cardImageScale * Math.min(devicePixelRatio, 1.5, 860 / Math.max(width, height));
+                  const w = Math.max(1, Math.round(width * ratio));
+                  const h = Math.max(1, Math.round(height * ratio));
+                  const prefix = Math.min(w, Math.ceil(w / 16) * 2);
+                  const offset = parseFloat(
+                    view.image.parentElement.style.getPropertyValue('--card-offset'),
+                  );
+                  const nextOffset = parseFloat(
+                    ordered[index - 1]?.image.parentElement.style.getPropertyValue('--card-offset'),
+                  );
+                  const gap = Math.abs(offset - nextOffset);
+                  return {
+                    w,
+                    h,
+                    renderW:
+                      index === 0
+                        ? w
+                        : Math.min(
+                            prefix,
+                            Number.isFinite(gap) ? Math.ceil((gap * w) / width) + 2 : prefix,
+                          ),
+                  };
+                });
+                // Reserve another full face for the flight and the small
+                // completion suffix that may temporarily overlap the fan.
+                jobs.push({ ...jobs[0], renderW: jobs[0].w });
+                batchRenderer.reserveFor(jobs);
+              },
+              { valid: () => !disposed && host.isConnected },
+            );
+          }
+          if (disposed || !host.isConnected) return;
           if (incremental)
             await Promise.all(
               batch

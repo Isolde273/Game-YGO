@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
+import { scheduleResourceTask } from '../scene/resource-scheduler.js';
 
 // Submit card tiles together, then cross from WebGL to 2D once per atlas.
 // Small atlases bound temporary memory for large sorting fans.
@@ -105,13 +106,17 @@ export function createFinishBatchRenderer(renderer, scene, camera, plane) {
     mesh.visible = true;
     return mesh;
   }
-  function flush(tiles, usedHeight, width, maxHeight) {
+  function reservePage(usedHeight, width, maxHeight) {
     const height = Math.min(maxHeight, Math.ceil(usedHeight / 64) * 64);
     reserve(width, height);
     const size = capacity(atlas, width, height);
     if (size) {
       [atlas.width, atlas.height] = size;
     }
+    return height;
+  }
+  function flush(tiles, usedHeight, width, maxHeight) {
+    const height = reservePage(usedHeight, width, maxHeight);
     camera.clearViewOffset();
     pool.forEach((mesh) => (mesh.visible = false));
     tiles.forEach(({ job, x, y }, index) =>
@@ -181,6 +186,9 @@ export function createFinishBatchRenderer(renderer, scene, camera, plane) {
       copies++;
       return;
     }
+    forEachPage(jobs, flush);
+  }
+  function forEachPage(jobs, consume) {
     const width = Math.min(
       2048,
       renderer.capabilities.maxTextureSize,
@@ -200,7 +208,7 @@ export function createFinishBatchRenderer(renderer, scene, camera, plane) {
         rowHeight = 0;
       }
       if (y + Math.ceil(job.h / 2) * 2 > maxHeight) {
-        flush(tiles, y + rowHeight, width, maxHeight);
+        consume(tiles, y + rowHeight, width, maxHeight);
         tiles = [];
         x = y = rowHeight = 0;
       }
@@ -209,10 +217,16 @@ export function createFinishBatchRenderer(renderer, scene, camera, plane) {
       x += Math.ceil(job.renderW / 2) * 2;
       rowHeight = Math.max(rowHeight, Math.ceil(job.h / 2) * 2);
     }
-    if (tiles.length) flush(tiles, y + rowHeight, width, maxHeight);
+    if (tiles.length) consume(tiles, y + rowHeight, width, maxHeight);
   }
   return {
     draw,
+    reserveFor(jobs) {
+      if (disposed || !jobs.length) return;
+      forEachPage(jobs, (_, usedHeight, width, maxHeight) =>
+        reservePage(usedHeight, width, maxHeight),
+      );
+    },
     async prepare(material) {
       // Compile both programs before the inspector starts moving.
       // Keep compilation independent of a warm stack being released/replaced.
@@ -244,6 +258,13 @@ export function createFinishBatchRenderer(renderer, scene, camera, plane) {
         // wait so exiting during prewarming also settles the prepare promise.
         while (!disposed && programs.some((program) => !program.isReady()))
           await new Promise(requestAnimationFrame);
+        for (const program of programs) {
+          if (disposed) return;
+          // Linking readiness does not initialize Three's uniforms/attributes.
+          // Finish that first-use work in separate preparation turns so the
+          // first visible card draw cannot inherit synchronous shader checks.
+          await scheduleResourceTask(() => program.getUniforms(), { valid: () => !disposed });
+        }
       } finally {
         // Retain the compiled program, without retaining card textures.
         for (const name of Object.keys(preview.uniforms)) delete preview.uniforms[name];
