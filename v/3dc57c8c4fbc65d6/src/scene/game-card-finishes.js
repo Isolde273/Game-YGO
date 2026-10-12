@@ -4,6 +4,33 @@ import { createFinishMaterial } from './material-finishes.js';
 import { acquireTextureImage } from './texture-images.js';
 import { scheduleResourceTask } from './resource-scheduler.js';
 
+function texturePaths(data) {
+  return [
+    data.rarity === 'GMR' ? data.front.replace('-front.jpg', '-blank.jpg') : data.front,
+    data.mask,
+    data.normal,
+    data.border,
+    data.accent,
+  ];
+}
+
+function textureURL(data, path) {
+  return new URL(`../../public/${data.assetRoot ?? 'locr-catalog'}/${path}`, import.meta.url).href;
+}
+
+export function cardFinishTextureURLs(records) {
+  const urls = new Set();
+  for (const record of [...records].reverse()) {
+    const data = getCardView(record.printId ?? record.rarity);
+    if (!data || data.legacy) continue;
+    // Include the original face used by the DOM fallback, also for GMR.
+    for (const path of [...texturePaths(data), data.front]) {
+      if (path) urls.add(textureURL(data, path));
+    }
+  }
+  return [...urls];
+}
+
 // Texture references follow visible cards, not the full catalog or save inventory.
 export function createGameFinishLibrary(invalidate = () => {}) {
   const textures = new Map(),
@@ -21,8 +48,7 @@ export function createGameFinishLibrary(invalidate = () => {}) {
   const flat = solid([128, 128, 255, 255]);
   function texture(data, path, srgb = false, priority = 2) {
     if (!path) return { map: black, ready: Promise.resolve(black), release() {} };
-    const url = new URL(`../../public/${data.assetRoot ?? 'locr-catalog'}/${path}`, import.meta.url)
-      .href;
+    const url = textureURL(data, path);
     let item = textures.get(url);
     if (!item) {
       const pixels = acquireTextureImage(url, { priority });
@@ -85,13 +111,7 @@ export function createGameFinishLibrary(invalidate = () => {}) {
     const key = `${data.id}:${record.serial ?? ''}`;
     let entry = entries.get(key);
     if (!entry) {
-      const paths = [
-        data.rarity === 'GMR' ? data.front.replace('-front.jpg', '-blank.jpg') : data.front,
-        data.mask,
-        data.normal,
-        data.border,
-        data.accent,
-      ];
+      const paths = texturePaths(data);
       const maps = paths.map((path, index) => texture(data, path, index === 0, priority));
       let stamp = null;
       if (data.rarity === 'GMR' && record.serial) {

@@ -1774,6 +1774,8 @@ class UnboxingWorld {
     this.syncAccessibility();
   }
   createPackOpening(records, result, flatQ) {
+    // Download the known stack during the opening; no decode/GPU work here.
+    this.options.prefetchFinishes?.(result.cards);
     const focus = new THREE.Vector3().copy(records[0].body.position),
       fromQ = new THREE.Quaternion().copy(records[0].body.quaternion);
     const model = new THREE.Group();
@@ -2497,7 +2499,7 @@ class UnboxingWorld {
         stack = hit?.stack ?? null;
       if (this.hover !== record || this.hoverStack !== stack) {
         this.needsRender = true;
-        if (stack?.ready) this.options.warmFinishes?.(stack.data.cards);
+        if (stack?.ready) this.options.warmFinishes?.(stack.data.cards, { prefetchPriority: 1 });
       }
       this.hover = record;
       this.hoverStack = stack;

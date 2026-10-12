@@ -1,5 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
-import { createGameFinishLibrary } from '../scene/game-card-finishes.js';
+import { cardFinishTextureURLs, createGameFinishLibrary } from '../scene/game-card-finishes.js';
+import { prefetchTextureImages, textureImageStats } from '../scene/texture-images.js';
 import { createFinishBatchRenderer } from './card-finish-batch.js';
 import { movingFinishImages } from './motion/finish-motion.js';
 import {
@@ -78,6 +79,8 @@ export function createCardFinishes(root, settings) {
     warmRun = 0,
     warmHandles = [],
     programsReady = null;
+  let prefetchKey = '',
+    stackPrefetch = null;
   let programPriority = 0;
   let completionPixelBudget = 32768;
   let lastCompletionFrame = 0;
@@ -128,7 +131,21 @@ export function createCardFinishes(root, settings) {
     });
     return Promise.all(ready);
   }
-  function warm(records) {
+  function prefetch(records, { priority = 0 } = {}) {
+    if (disposed) return;
+    const urls = cardFinishTextureURLs(records);
+    // Physical alignment may reorder cards without changing the resource set.
+    const key = [...urls].sort().join('|');
+    if (key === prefetchKey) {
+      stackPrefetch?.promote(priority);
+      return;
+    }
+    stackPrefetch?.cancel();
+    prefetchKey = key;
+    stackPrefetch = urls.length ? prefetchTextureImages(urls, { priority }) : null;
+  }
+  function warm(records, { prefetchPriority = 0 } = {}) {
+    prefetch(records, { priority: prefetchPriority });
     // Repeated prints share one material and its textures; warm each only once.
     // A web visit must not queue an entire saved stack ahead of the next pack.
     // The inspector loads rear cards in its own ordered preparation batches.
@@ -806,6 +823,7 @@ export function createCardFinishes(root, settings) {
   return {
     refresh,
     warm,
+    prefetch,
     complete,
     async prepare(
       host,
@@ -819,10 +837,20 @@ export function createCardFinishes(root, settings) {
       if (disposed || !host.isConnected) return;
       scan();
       const prepared = [...views.values()].filter((view) => host.contains(view.image));
+      let downloadingAhead = null;
       try {
         for (const view of prepared) view.preparing = true;
         // Render at the final layout and light position before committing these nodes.
         const ordered = [...prepared].reverse();
+        if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
+          // This producer fills the bounded network window independently of
+          // two-card uploads/draws. It downloads bytes only, never hidden GPUs.
+          const records = prepared.map((view) => ({ printId: view.image.dataset.finishPrint }));
+          downloadingAhead = prefetchTextureImages(cardFinishTextureURLs(records), {
+            priority: 1,
+            concurrency: 16,
+          });
+        }
         // Two rear strips keep the first draw small, while sharing their atlas
         // copy. The complete top card is always prepared separately first.
         const count = incremental ? 2 : Math.max(1, ordered.length);
@@ -838,6 +866,12 @@ export function createCardFinishes(root, settings) {
             }),
           );
           if (disposed || !host.isConnected) return;
+          // Start the next bounded decode window before this pair uploads or
+          // paints; network prefetch keeps advancing even while drawing waits.
+          if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
+            for (const upcoming of ordered.slice(i + batch.length, i + batch.length + 6))
+              activate(upcoming, 1);
+          }
           if (incremental && i === 0 && batch[0]?.handle)
             await preparePrograms(batch[0].handle.material);
           if (disposed || !host.isConnected) return;
@@ -897,14 +931,9 @@ export function createCardFinishes(root, settings) {
           draw(batch, { sortingEntry });
           if (i === 0) onFirstReady();
           i += batch.length;
-          // Overlap a bounded window of downloads with the current batch's
-          // decoding/uploads. Keep the first full card ahead of rear assets;
-          // only the active pair is uploaded or painted by this preparation loop.
-          if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
-            for (const upcoming of ordered.slice(i, i + 6)) activate(upcoming, 1);
-          }
         }
       } finally {
+        downloadingAhead?.cancel();
         for (const view of prepared) view.preparing = false;
         schedule();
       }
@@ -921,10 +950,12 @@ export function createCardFinishes(root, settings) {
       ),
       contexts: renderer ? 1 : 0,
       resources: resourceSchedulerStats(),
+      images: textureImageStats(),
       completionPixelBudget,
     }),
     dispose() {
       disposed = true;
+      stackPrefetch?.cancel();
       ++warmRun;
       warmHandles.forEach((handle) => handle.release());
       warmHandles = [];
