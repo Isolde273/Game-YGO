@@ -90,7 +90,7 @@ export function createRoomDamage(renderer, scene, camera, light) {
       const z = corner & 4 ? bounds.max.z : bounds.min.z;
       point.set(x, y, z);
       project();
-      if (direction.y < -0.0001 && y > floor) {
+      if (object.castShadow && direction.y < -0.0001 && y > floor) {
         point.set(x, y, z).addScaledVector(direction, (floor - y) / direction.y);
         project();
       }
@@ -116,6 +116,9 @@ export function createRoomDamage(renderer, scene, camera, light) {
       light.intensity,
     ].join(':');
     let full = invalid || projectionKey !== key || stats.full + stats.partial === 1;
+    // Stored footprints use the old camera/light projection. Rebuild them on
+    // a full invalidation so a later move or removal clears the right pixels.
+    if (full) previous.clear();
     projectionKey = key;
     invalid = false;
     const next = new Map();

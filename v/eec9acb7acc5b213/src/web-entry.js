@@ -9,4 +9,7 @@ if (!globalThis.crypto.randomUUID) {
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   };
 }
+// Menus opened on pointerup can become the target of the following contextmenu event.
+// Cancel the browser menu for the whole game without stopping its own right-click handlers.
+document.addEventListener('contextmenu', (event) => event.preventDefault(), { capture: true });
 await import('./app.js');
