@@ -277,6 +277,24 @@ class UnboxingWorld {
         if (this.disposed) return;
         await prepareRenderer(this.renderer, this.scene, this.camera, () => !this.disposed);
         if (this.disposed) return;
+        this.damageRenderer = createRoomDamage(
+          this.renderer,
+          this.scene,
+          this.camera,
+          this.keyLight,
+          this.desk.root,
+        );
+        await this.damageRenderer.prepare(() => !this.disposed);
+        await scheduleResourceTask(
+          () => {
+            this.applyRenderSize();
+            // Prime the complete native-buffer pipeline while the canvas is
+            // hidden. The next delivered frame is the first visible room frame.
+            this.damageRenderer.render();
+          },
+          { valid: () => !this.disposed },
+        );
+        if (this.disposed) return;
         this.renderPrepared = true;
         if (this.scaleMigrated) this.organize({ silent: true });
         else if (this.viewClamped) this.persist();
@@ -2388,6 +2406,13 @@ class UnboxingWorld {
       this.frame = 0;
     } else this.wake();
   }
+  applyRenderSize() {
+    if (!this.renderSize) return;
+    const { width, height } = this.renderSize;
+    this.renderer.setDrawingBufferSize(width, height, this.quality.ratio);
+    this.stats.bufferResizes = (this.stats.bufferResizes ?? 0) + 1;
+    this.renderSize = null;
+  }
   tick(now) {
     if (this.disposed || this.navigationPaused) return;
     this.frame = 0;
@@ -2517,12 +2542,7 @@ class UnboxingWorld {
     if (this.shadowDirty && !moving && !this.animations.length && !this.effects.length)
       this.needsRender = true;
     if (this.needsRender && !obscured && this.renderPrepared) {
-      if (this.renderSize) {
-        const { width, height } = this.renderSize;
-        this.renderer.setDrawingBufferSize(width, height, this.quality.ratio);
-        this.stats.bufferResizes = (this.stats.bufferResizes ?? 0) + 1;
-        this.renderSize = null;
-      }
+      this.applyRenderSize();
       // A cached shadow from the previous pose can shade the moving object
       // itself on alternating frames. Keep manipulation and falling in sync.
       const updateShadow =
@@ -2536,19 +2556,13 @@ class UnboxingWorld {
       this.renderer.info.reset();
       this.camera.layers.set(0);
       this.library?.updateCardLight(this.keyLight.position);
-      this.damageRenderer ??= createRoomDamage(
-        this.renderer,
-        this.scene,
-        this.camera,
-        this.keyLight,
-      );
-      this.damageRenderer.render();
-      this.stats.renders++;
+      const rendered = this.damageRenderer.render({ allowSkip: true });
+      if (rendered) this.stats.renders++;
       this.needsRender = false;
       if (updateShadow) {
         this.shadowDirty = false;
         this.lastShadowAt = now;
-        this.stats.shadowUpdates++;
+        if (rendered) this.stats.shadowUpdates++;
       }
       if (this.canvas.dataset.ready === 'true') {
         this.canvas.dataset.presented = 'true';

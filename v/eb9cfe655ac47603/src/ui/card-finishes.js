@@ -848,6 +848,12 @@ export function createCardFinishes(root, settings) {
           draw(batch, { sortingEntry });
           if (i === 0) onFirstReady();
           i += batch.length;
+          // Overlap a bounded window of downloads with the current batch's
+          // decoding/uploads. Keep the first full card ahead of rear assets;
+          // only the active pair is uploaded or painted by this preparation loop.
+          if (incremental && sortingEntry && document.documentElement.dataset.webRelease) {
+            for (const upcoming of ordered.slice(i, i + 6)) activate(upcoming, 1);
+          }
         }
       } finally {
         for (const view of prepared) view.preparing = false;
