@@ -11,11 +11,22 @@ export async function prepareRenderer(renderer, scene, camera, valid = () => tru
     valid,
   });
   if (!valid()) return;
-  const programs = [...materials].map(
-    (material) => renderer.properties.get(material).currentProgram,
-  );
+  const programs = [
+    ...new Set(
+      [...materials].flatMap((material) => {
+        const properties = renderer.properties.get(material);
+        return properties.programs
+          ? [...properties.programs.values()]
+          : [properties.currentProgram];
+      }),
+    ),
+  ];
   while (valid() && programs.some((program) => !program.isReady())) await nextFrame();
   if (!valid()) return;
+  for (const program of programs) {
+    await scheduleResourceTask(() => program.getUniforms(), { valid });
+    if (!valid()) return;
+  }
   let uploaded = uploads.get(renderer);
   if (!uploaded) uploads.set(renderer, (uploaded = new WeakMap()));
   const textures = new Set();
