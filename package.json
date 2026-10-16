@@ -1,0 +1,7 @@
+{
+    "main":  "desktop/main.mjs",
+    "description":  "游戏王实卡开盒模拟器-原版",
+    "name":  "yugioh-duel-archive",
+    "version":  "1.0.0",
+    "type":  "module"
+}
